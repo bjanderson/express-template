@@ -1,0 +1,15 @@
+{
+  "name": "express-template",
+  "version": "0.0.0",
+  "description": "A template for building a node express server.",
+  "main": "server/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Bartley Anderson",
+  "license": "MIT",
+  "dependencies": {
+    "express": "~4.13.0",
+    "body-parser": "~1.13.1"
+  }
+}
