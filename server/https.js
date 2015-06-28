@@ -13,7 +13,7 @@ function httpsServer(config) {
       cert: fs.readFileSync('server/ssl/server.crt'),
       ca: [fs.readFileSync('server/ssl/ca.crt')],
       requestCert: true,
-      rejectUnauthorized: true,
+      rejectUnauthorized: false,
       agent: false,
 
       // This is the password that was used to create the server's certificate.
@@ -25,10 +25,10 @@ function httpsServer(config) {
   //configure express to serve static files from the given directory
   if (config.env === 'dist') {
     console.log('serving /dist');
-    server.use(express.static(__dirname + '/../dist'));
+    server.use(express.static(__dirname + '/../dist/private'));
   } else {
     console.log('serving /client');
-    server.use(express.static(__dirname + '/../client'));  
+    server.use(express.static(__dirname + '/../client/private'));  
   }
 
   //configure express to use body-parser
@@ -63,7 +63,9 @@ function authChecker(req, res, next) {
         next();
     } else {
         console.log('authChecker - 401');
-        res.status(401).json({error: 'Not Authorized.'});
+        res.status(401)
+          .json({error: 'Not Authorized.'});
+        /*res.sendfile('unauthorized.html', { root: __dirname + "/../client/public" });*/
     }
 
     console.log('-----------------------------------');

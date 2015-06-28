@@ -15,10 +15,10 @@ function httpServer(config) {
   //configure express to serve static files from the given directory
   if (config.env === 'dist') {
     console.log('serving /dist');
-    server.use(express.static(__dirname + '/../dist'));
+    server.use(express.static(__dirname + '/../dist/public'));
   } else {
     console.log('serving /client');
-    server.use(express.static(__dirname + '/../client'));  
+    server.use(express.static(__dirname + '/../client/public'));  
   }
 
   //configure express to use body-parser
