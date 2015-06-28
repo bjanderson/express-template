@@ -9,8 +9,8 @@
   "author": "Bartley Anderson",
   "license": "MIT",
   "dependencies": {
-    "express": "~4.13.0",
     "body-parser": "~1.13.1",
+    "express": "~4.13.0",
     "scribe-js": "~2.0.4"
   }
 }
