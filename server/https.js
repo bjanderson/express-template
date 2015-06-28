@@ -1,12 +1,14 @@
 var express = require('express'),
-    bodyparser = require('body-parser'),
-    fs = require('fs'),
-    https = require('https'),
-    server = express();
+  bodyparser = require('body-parser'),
+  fs = require('fs'),
+  https = require('https'),
+  server = express(),
+  scribe = require('scribe-js')({rootPath: 'https-logs'}),
+  console = process.console;
+
+module.exports = httpsServer;
 
 function httpsServer(config) {
-  console.log(' ');
-  console.log(config);
   var port = config.basePort + 443,
     httpsOptions = {
       key: fs.readFileSync('server/ssl/server.key'),
@@ -20,22 +22,33 @@ function httpsServer(config) {
       // Located in the ssl/passphrase file
       passphrase: '1234'
     };
-  console.log('port: ' + port);
+
+  // configure express to use the scribe logger
+  server.use(scribe.express.logger());
+  server.use('/https-logs', scribe.webPanel()); // access at https://localhost:[port]/logs
+
+  server.use(authChecker);
 
   //configure express to serve static files from the given directory
-  if (config.env === 'dist') {
-    console.log('serving /dist');
-    server.use(express.static(__dirname + '/../dist/private'));
-  } else {
-    console.log('serving /client');
-    server.use(express.static(__dirname + '/../client/private'));  
-  }
+  server.use('/assets', express.static(__dirname + '/../client/public/assets'));
+  server.use(express.static(__dirname + '/../client/private'));  
 
   //configure express to use body-parser
   server.use(bodyparser.json());
   server.use(bodyparser.raw());
   server.use(bodyparser.urlencoded({extended: true}));
-  server.use(authChecker);
+  
+  /*server.get('/', function (req, res) {
+    console.log('/ - GET');
+    //console.log(req.client);
+    console.log('req.client.authorized: ' + req.client.authorized);
+    //res.json('Authenticated.');
+    res.json(
+      {
+        authorized: req.client.authorized
+      }
+    );
+  });*/
 
   // Create and start the https server
   https.createServer(httpsOptions, server).listen(port, function () {
@@ -56,21 +69,19 @@ function authChecker(req, res, next) {
     console.log('authorized: ' + req.client.authorized);
     console.log('req.url: ' + req.url);
 
-    //throw new Error();    //returns a 500 error from the server
-
     if(req.client.authorized === true) {
-        console.log('authChecker - authorized');
-        next();
+      //console.log('authChecker - authorized');
+      next();
+    } else if (req.url === '/favicon.ico' || req.url.indexOf('/assets/') === 0) {
+      // allow files in the client/public/assets folder to be served without authorization
+      // (e.g. css and javascript files)
+      //console.log('authChecker - assets')
+      next();
     } else {
-        console.log('authChecker - 401');
-        res.status(401)
-          .json({error: 'Not Authorized.'});
-        /*res.sendfile('unauthorized.html', { root: __dirname + "/../client/public" });*/
+      //console.log('authChecker - 401');
+      res.status(401).sendFile('unauthorized.html', { root: __dirname + "/../client/private" });
     }
 
     console.log('-----------------------------------');
     console.log(' ');
 }
-
-
-module.exports = httpsServer;

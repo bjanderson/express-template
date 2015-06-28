@@ -1,25 +1,21 @@
 'use strict';
 
 var express = require('express'),
-    bodyparser = require('body-parser'),
-    server = express();
+  bodyparser = require('body-parser'),
+  server = express(),
+  scribe = require('scribe-js')({rootPath: 'http-logs'}),
+  console = process.console;
 
 
 function httpServer(config) {
   var port = config.basePort + 80;
 
-  console.log(' ');
-  console.log('__dirname ' + __dirname);
-  console.log(' ');
+  // configure express to use the scribe logger
+  server.use(scribe.express.logger());
+  server.use('/http-logs', scribe.webPanel()); // access at http://localhost:[port]/logs
 
   //configure express to serve static files from the given directory
-  if (config.env === 'dist') {
-    console.log('serving /dist');
-    server.use(express.static(__dirname + '/../dist/public'));
-  } else {
-    console.log('serving /client');
-    server.use(express.static(__dirname + '/../client/public'));  
-  }
+  server.use(express.static(__dirname + '/../client/public'));  
 
   //configure express to use body-parser
   server.use(bodyparser.json());
