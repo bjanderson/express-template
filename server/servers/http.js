@@ -8,14 +8,15 @@ var express = require('express'),
 
 
 function httpServer(config) {
-  var port = config.basePort + 80;
+  console.log(config);
+  var port = config.httpPort;
 
   // configure express to use the scribe logger
   server.use(scribe.express.logger());
   server.use('/http-logs', scribe.webPanel()); // access at http://localhost:[port]/logs
 
   //configure express to serve static files from the given directory
-  server.use(express.static(__dirname + '/../client/public'));  
+  server.use(express.static(__dirname + '/../../client/public'));
 
   //configure express to use body-parser
   server.use(bodyparser.json());

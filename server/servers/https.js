@@ -9,7 +9,7 @@ var express = require('express'),
 module.exports = httpsServer;
 
 function httpsServer(config) {
-  var port = config.basePort + 443,
+  var port = config.httpsPort,
     httpsOptions = {
       key: fs.readFileSync('server/ssl/server.key'),
       cert: fs.readFileSync('server/ssl/server.crt'),
@@ -19,7 +19,7 @@ function httpsServer(config) {
       agent: false,
 
       // This is the password that was used to create the server's certificate.
-      // Located in the ssl/passphrase file
+      // Located in the server/ssl/passphrase file
       passphrase: '1234'
     };
 
@@ -30,14 +30,14 @@ function httpsServer(config) {
   server.use(authChecker);
 
   //configure express to serve static files from the given directory
-  server.use('/assets', express.static(__dirname + '/../client/public/assets'));
-  server.use(express.static(__dirname + '/../client/private'));  
+  server.use('/assets', express.static(__dirname + '/../../client/public/assets'));
+  server.use(express.static(__dirname + '/../../client/private'));
 
   //configure express to use body-parser
   server.use(bodyparser.json());
   server.use(bodyparser.raw());
   server.use(bodyparser.urlencoded({extended: true}));
-  
+
   /*server.get('/', function (req, res) {
     console.log('/ - GET');
     //console.log(req.client);
@@ -79,7 +79,7 @@ function authChecker(req, res, next) {
       next();
     } else {
       //console.log('authChecker - 401');
-      res.status(401).sendFile('unauthorized.html', { root: __dirname + "/../client/private" });
+      res.status(401).sendFile('unauthorized.html', { root: __dirname + "/../../client/private" });
     }
 
     console.log('-----------------------------------');
